@@ -19,13 +19,20 @@ class OscilloscopeEditor : public juce::Component, public juce::Timer
     private:
         VisualSauceAudioProcessor& audioProcessor;
 
-        static constexpr int scopeSize = 512;
-        int samplesInScope = 0;
-        std::array<float, scopeSize> localData {};
-        std::array<float, scopeSize * 8> tempBuffer {};
 
-        int findTriggerIndex (int numSamplesToDraw);
-        int step = 4; // Adjust this value to control the downsampling factor
+
+
+        static constexpr int    step = 5;
+        static constexpr int    scopeSize = 512;
+        int findTriggerIndex (int numSamplesToDraw, int numValidSamples);
+
+        int                             historyWriteIndex = 0;
+        int                             samplesInScope = 0;
+        int                             historySamples = 0;
+        static constexpr int            historySize = scopeSize * 8;
+        std::array<float, scopeSize>    localData {};
+        std::array<float, historySize>  tempBuffer {};
+        std::array<float, historySize>  historyBuffer {};
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscilloscopeEditor)
 };

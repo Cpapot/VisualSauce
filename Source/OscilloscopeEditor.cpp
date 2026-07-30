@@ -39,25 +39,53 @@ void OscilloscopeEditor::readFromFifo(float* destinationBuffer, int numSamplesTo
 void OscilloscopeEditor::timerCallback()
 {
     int availableSamples = audioProcessor.abstractFifo.getNumReady();
-    if (availableSamples >= tempBuffer.size())
+    if (availableSamples <= 0)
+        return;
+
+    while (availableSamples > 0)
     {
-        std::fill(tempBuffer.begin(), tempBuffer.end(), 0.0f);
-        readFromFifo(tempBuffer.data(), (int) tempBuffer.size());
+        int samplesToRead = std::min(availableSamples, (int) tempBuffer.size());
 
-        int triggerIndex = findTriggerIndex(scopeSize * step);
+        readFromFifo(tempBuffer.data(), samplesToRead);
 
-        int requiredSamples = scopeSize * step;
-        if (triggerIndex + requiredSamples < tempBuffer.size())
+        for (int i = 0; i < samplesToRead; ++i)
         {
-            for (int i = 0; i < scopeSize; ++i)
-            {
-                localData[i] = tempBuffer[triggerIndex + (i * step)];
-            }
+            historyBuffer[(historyWriteIndex + i) % historyBuffer.size()] = tempBuffer[i];
         }
-        samplesInScope = scopeSize;
 
-        repaint();
+        historyWriteIndex = (historyWriteIndex + samplesToRead) % historyBuffer.size();
+        historySamples = std::min(historySamples + samplesToRead, (int) historyBuffer.size());
+
+        availableSamples = audioProcessor.abstractFifo.getNumReady();
     }
+
+    if (historySamples < scopeSize * step)
+    {
+        samplesInScope = 0;
+        repaint();
+        return;
+    }
+
+    int oldestSampleIndex = (historyWriteIndex - historySamples + (int) historyBuffer.size()) % (int) historyBuffer.size();
+
+    for (int i = 0; i < historySamples; ++i)
+    {
+        tempBuffer[i] = historyBuffer[(oldestSampleIndex + i) % historyBuffer.size()];
+    }
+
+    int triggerIndex = findTriggerIndex(scopeSize * step, historySamples);
+
+    int requiredSamples = scopeSize * step;
+    if (triggerIndex + requiredSamples <= historySamples)
+    {
+        for (int i = 0; i < scopeSize; ++i)
+        {
+            localData[i] = tempBuffer[triggerIndex + (i * step)];
+        }
+    }
+
+    samplesInScope = scopeSize;
+    repaint();
 }
 
 void OscilloscopeEditor::paint(juce::Graphics& g)
@@ -92,9 +120,9 @@ void OscilloscopeEditor::paint(juce::Graphics& g)
 
 }
 
-int OscilloscopeEditor::findTriggerIndex (int numSamplesToDraw)
+int OscilloscopeEditor::findTriggerIndex (int numSamplesToDraw, int numValidSamples)
 {
-    int searchLimit = (int) tempBuffer.size() - numSamplesToDraw;
+    int searchLimit = numValidSamples - numSamplesToDraw;
     if (searchLimit <= 0) return 0;
 
     float sum = std::accumulate (tempBuffer.begin(), 
