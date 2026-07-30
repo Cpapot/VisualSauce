@@ -136,7 +136,7 @@ void VisualSauceAudioProcessor::pushBuffer(const juce::AudioBuffer<float>& buffe
     if (buffer.getNumChannels() == 0 || buffer.getNumSamples() == 0)
         return;
 
-    const float* channelData = buffer.getReadPointer(0); //0 is mono channel
+    const float* channelData = buffer.getReadPointer(0);
     int numSamples = buffer.getNumSamples();
 
     int start1, size1, start2, size2;

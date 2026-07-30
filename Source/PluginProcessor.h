@@ -34,7 +34,7 @@ class VisualSauceAudioProcessor final : public juce::AudioProcessor
         void setStateInformation(const void* data, int sizeInBytes) override;
 
         void pushBuffer(const juce::AudioBuffer<float>& buffer);
-        static constexpr int        fifoSize = 2048;           //prealocated size
+        static constexpr int        fifoSize = 8192;           //prealocated size
         std::array<float, fifoSize> audioFifo {};       //preallocated audio buffer to draw the oscilloscope
         juce::AbstractFifo          abstractFifo { fifoSize };   //abstract fifo to manage the audio buffer
 

@@ -1,11 +1,13 @@
 #include "OscilloscopeEditor.h"
 
 #include <algorithm>
+#include <numeric>
 
 OscilloscopeEditor::OscilloscopeEditor(VisualSauceAudioProcessor& processor)
     : audioProcessor(processor)
 {
     startTimerHz(60);
+    setOpaque (true);
 }
 
 OscilloscopeEditor::~OscilloscopeEditor()
@@ -36,20 +38,26 @@ void OscilloscopeEditor::readFromFifo(float* destinationBuffer, int numSamplesTo
 
 void OscilloscopeEditor::timerCallback()
 {
-    const auto availableSamples = audioProcessor.abstractFifo.getNumReady();
-
-    if (availableSamples <= 0)
+    int availableSamples = audioProcessor.abstractFifo.getNumReady();
+    if (availableSamples >= tempBuffer.size())
     {
-        samplesInScope = 0;
+        std::fill(tempBuffer.begin(), tempBuffer.end(), 0.0f);
+        readFromFifo(tempBuffer.data(), (int) tempBuffer.size());
+
+        int triggerIndex = findTriggerIndex(scopeSize * step);
+
+        int requiredSamples = scopeSize * step;
+        if (triggerIndex + requiredSamples < tempBuffer.size())
+        {
+            for (int i = 0; i < scopeSize; ++i)
+            {
+                localData[i] = tempBuffer[triggerIndex + (i * step)];
+            }
+        }
+        samplesInScope = scopeSize;
+
         repaint();
-        return;
     }
-
-    samplesInScope = std::min(availableSamples, (int) localData.size());
-    std::fill(localData.begin(), localData.end(), 0.0f);
-    readFromFifo(localData.data(), samplesInScope);
-
-    repaint();
 }
 
 void OscilloscopeEditor::paint(juce::Graphics& g)
@@ -68,11 +76,9 @@ void OscilloscopeEditor::paint(juce::Graphics& g)
     auto width = getWidth();
     auto height = getHeight();
 
-    for (int i = 0; i < samplesInScope; i++)
+    for (int i = 0; i < std::min(samplesInScope, scopeSize); i++)
     {
-        float x = juce::jmap ((float) i,
-                      0.0f, (float) (samplesInScope - 1), // Plage de départ
-                      0.0f, (float) width);                // Plage d'arrivée
+        float x = juce::jmap ((float) i, 0.0f, (float) (samplesInScope - 1), 0.0f, (float) width);
 
         float y = juce::jmap((float) localData[i], -1.0f, 1.0f, (float) height, 0.0f);
 
@@ -84,4 +90,24 @@ void OscilloscopeEditor::paint(juce::Graphics& g)
     g.setColour (juce::Colours::limegreen);
     g.strokePath (oscilloscopePath, juce::PathStrokeType (2.0f));
 
+}
+
+int OscilloscopeEditor::findTriggerIndex (int numSamplesToDraw)
+{
+    int searchLimit = (int) tempBuffer.size() - numSamplesToDraw;
+    if (searchLimit <= 0) return 0;
+
+    float sum = std::accumulate (tempBuffer.begin(), 
+                             tempBuffer.begin() + searchLimit, 
+                             0.0f);
+    float average = sum / (float) searchLimit;
+
+    for (int i = 1; i < searchLimit; ++i)
+    {
+        if (tempBuffer[i - 1] < average && tempBuffer[i] >= average)
+        {
+            return i;
+        }
+    }
+    return 0;
 }
