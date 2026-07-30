@@ -28,4 +28,10 @@ cmake -S . -B build
 cmake --build build
 ```
 
+If you are using a multi-config generator such as Visual Studio, omit `CMAKE_BUILD_TYPE` during configure and select the config at build time, for example:
+
+```bash
+cmake --build build --config Release
+```
+
 The plugin targets are generated as VST3 and Standalone.

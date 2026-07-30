@@ -51,3 +51,13 @@ target_link_libraries(VisualSauce
         juce::juce_recommended_lto_flags
         juce::juce_recommended_warning_flags
 )
+
+if(WIN32 AND TARGET VisualSauce_VST3)
+    add_custom_command(TARGET VisualSauce_VST3 POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            "-DPLUGIN_SOURCE=${CMAKE_CURRENT_BINARY_DIR}/VisualSauce_artefacts/$<CONFIG>/VST3/VisualSauce.vst3"
+            "-DPLUGIN_DEST=C:/Program Files/Common Files/VST3/VisualSauce.vst3"
+            "-DPLUGIN_CONFIG=$<CONFIG>"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/copy_vst3_to_system.cmake"
+        VERBATIM)
+endif()

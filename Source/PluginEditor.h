@@ -1,6 +1,5 @@
 #pragma once
 
-#include <JuceHeader.h>
 #include "PluginProcessor.h"
 
 class VisualSauceAudioProcessorEditor final : public juce::AudioProcessorEditor
