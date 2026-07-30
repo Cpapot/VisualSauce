@@ -25,7 +25,8 @@ bool VisualSauceAudioProcessor::isBusesLayoutSupported(const BusesLayout& layout
         return false;
 
 #ifndef JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+    if (!layouts.getMainInputChannelSet().isDisabled()
+        && layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
 #endif
 
@@ -35,11 +36,16 @@ bool VisualSauceAudioProcessor::isBusesLayoutSupported(const BusesLayout& layout
 void VisualSauceAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
+    if (buffer.getNumChannels() == 0)
+        return;
+
     const auto totalNumInputChannels = getTotalNumInputChannels();
     const auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
+
+    pushBuffer(buffer);
 }
 
 juce::AudioProcessorEditor* VisualSauceAudioProcessor::createEditor()
@@ -54,7 +60,7 @@ bool VisualSauceAudioProcessor::hasEditor() const
 
 const juce::String VisualSauceAudioProcessor::getName() const
 {
-    return JucePlugin_Name;
+    return "VisualSauce";
 }
 
 bool VisualSauceAudioProcessor::acceptsMidi() const
@@ -123,4 +129,33 @@ void VisualSauceAudioProcessor::setStateInformation(const void*, int)
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new VisualSauceAudioProcessor();
+}
+
+void VisualSauceAudioProcessor::pushBuffer(const juce::AudioBuffer<float>& buffer)
+{
+    if (buffer.getNumChannels() == 0 || buffer.getNumSamples() == 0)
+        return;
+
+    const float* channelData = buffer.getReadPointer(0); //0 is mono channel
+    int numSamples = buffer.getNumSamples();
+
+    int start1, size1, start2, size2;
+    abstractFifo.prepareToWrite(numSamples, start1, size1, start2, size2);
+
+    if (size1 > 0)
+    {
+        std::copy(channelData, 
+                  channelData + size1, 
+                  audioFifo.begin() + start1);
+    }
+
+    if (size2 > 0)
+    {
+        std::copy(channelData + size1, 
+                  channelData + size1 + size2, 
+                  audioFifo.begin() + start2);
+    }
+
+    abstractFifo.finishedWrite(size1 + size2);
+    //copy audio buff inside the class to draw it
 }

@@ -34,6 +34,8 @@ target_sources(VisualSauce PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.h
     Source/PluginEditor.cpp
+    Source/OscilloscopeEditor.cpp
+    Source/OscilloscopeEditor.h
 )
 
 target_compile_definitions(VisualSauce

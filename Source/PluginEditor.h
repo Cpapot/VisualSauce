@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "OscilloscopeEditor.h"
 
 class VisualSauceAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
@@ -12,5 +13,6 @@ public:
     void resized() override;
 
 private:
-    VisualSauceAudioProcessor& audioProcessor;
+    VisualSauceAudioProcessor&  audioProcessor;
+    OscilloscopeEditor          MyOscilloscope { audioProcessor };
 };

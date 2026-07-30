@@ -1,4 +1,7 @@
-if(NOT PLUGIN_CONFIG STREQUAL "Debug")
+if(NOT PLUGIN_CONFIG STREQUAL "Release")
+    if(EXISTS "${PLUGIN_DEST}")
+        file(REMOVE_RECURSE "${PLUGIN_DEST}")
+    endif()
     return()
 endif()
 

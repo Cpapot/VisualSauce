@@ -4,7 +4,12 @@ VisualSauceAudioProcessorEditor::VisualSauceAudioProcessorEditor(VisualSauceAudi
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
     juce::ignoreUnused(audioProcessor);
+    addAndMakeVisible (MyOscilloscope);
+
     setSize(800, 450);
+    setResizable(true, true);
+    setResizeLimits(400, 300, 4000, 3000);
+
 }
 
 void VisualSauceAudioProcessorEditor::paint(juce::Graphics& g)
@@ -17,4 +22,5 @@ void VisualSauceAudioProcessorEditor::paint(juce::Graphics& g)
 
 void VisualSauceAudioProcessorEditor::resized()
 {
+    MyOscilloscope.setBounds (10, 10, getWidth() - 20, getHeight() - 20);
 }
