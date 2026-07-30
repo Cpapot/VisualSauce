@@ -1,0 +1,9 @@
+/build/
+/.cmake/
+/.vs/
+/.vscode/
+/out/
+/Builds/
+/JuceLibraryCode/
+.DS_Store
+Thumbs.db
