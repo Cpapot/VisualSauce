@@ -6,7 +6,7 @@
 OscilloscopeEditor::OscilloscopeEditor(VisualSauceAudioProcessor& processor)
     : audioProcessor(processor)
 {
-    startTimerHz(60);
+    startTimerHz(120);
     setOpaque (true);
 }
 
@@ -115,9 +115,18 @@ void OscilloscopeEditor::paint(juce::Graphics& g)
         else
             oscilloscopePath.lineTo (x, y);
     }
-    g.setColour (juce::Colours::limegreen);
-    g.strokePath (oscilloscopePath, juce::PathStrokeType (2.0f));
+    juce::Colour glowColour = juce::Colours::limegreen.withAlpha(0.3f);
 
+    for (float thickness = 102.0f; thickness > 2.0f; thickness -= 2.0f)
+    {
+        float opacity = 0.2f / thickness; 
+        g.setColour (glowColour.withAlpha (opacity));
+        
+        g.strokePath (oscilloscopePath, juce::PathStrokeType (thickness));
+    }
+
+    g.setColour (juce::Colours::white);
+    g.strokePath (oscilloscopePath, juce::PathStrokeType (1.5f));
 }
 
 int OscilloscopeEditor::findTriggerIndex (int numSamplesToDraw, int numValidSamples)
