@@ -34,6 +34,7 @@ target_sources(VisualSauce PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.h
     Source/PluginEditor.cpp
+    Source/apvts.cpp
     Source/OscilloscopeEditor.cpp
     Source/OscilloscopeEditor.h
 )

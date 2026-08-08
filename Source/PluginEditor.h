@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "PluginProcessor.h"
 #include "OscilloscopeEditor.h"
 
@@ -13,6 +15,10 @@ public:
     void resized() override;
 
 private:
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> glowAttachment, gainAttachment, intensityAttachment;
+    juce::Slider glowSlider, gainSlider, intensitySlider;
+
+
     VisualSauceAudioProcessor&  audioProcessor;
     OscilloscopeEditor          MyOscilloscope { audioProcessor };
 };

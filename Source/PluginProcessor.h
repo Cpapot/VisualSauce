@@ -45,8 +45,20 @@ class VisualSauceAudioProcessor final : public juce::AudioProcessor
         void    setEditorSize(int newWidth, int newHeight) { editorWidth = newWidth; editorHeight = newHeight; }
         int     getEditorWidth() const { return editorWidth; }
         int     getEditorHeight() const { return editorHeight; }
+        juce::AudioProcessorValueTreeState					apvts;
+
     private:
         std::atomic<bool> editorOpen { false };
         int editorWidth = 800;
         int editorHeight = 450;
+        
+
+        //=== apvts ===
+        juce::AudioProcessorValueTreeState::ParameterLayout	createParameterLayout();
+	    void												updateParameters();
+
+        //=== apvts parameters ===
+        float gain { 0.5f };
+        float intensity { 0.5f };
+        float glow { 0.5f };
 };

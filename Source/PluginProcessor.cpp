@@ -5,7 +5,8 @@ VisualSauceAudioProcessor::VisualSauceAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
     : AudioProcessor(BusesProperties()
                          .withInput("Input", juce::AudioChannelSet::stereo(), true)
-                         .withOutput("Output", juce::AudioChannelSet::stereo(), true))
+                         .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
+      apvts(*this, nullptr, "PARAMETERS", createParameterLayout())
 #endif
 {
 }
@@ -39,6 +40,8 @@ void VisualSauceAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     if (buffer.getNumChannels() == 0)
         return;
 
+    updateParameters();
+
     const auto totalNumInputChannels = getTotalNumInputChannels();
     const auto totalNumOutputChannels = getTotalNumOutputChannels();
 
@@ -48,7 +51,10 @@ void VisualSauceAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     if (!isEditorOpen())
         return;
 
-    pushBuffer(buffer);
+    juce::AudioBuffer<float> visualBuffer;
+    visualBuffer.makeCopyOf (buffer);
+    visualBuffer.applyGain(gain);
+    pushBuffer(visualBuffer);
 }
 
 juce::AudioProcessorEditor* VisualSauceAudioProcessor::createEditor()
