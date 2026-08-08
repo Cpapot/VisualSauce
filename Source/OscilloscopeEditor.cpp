@@ -92,6 +92,9 @@ void OscilloscopeEditor::paint(juce::Graphics& g)
 {
     g.fillAll (juce::Colours::black);
 
+    auto* glowParameter = audioProcessor.apvts.getRawParameterValue ("glow");
+    auto glowAmount = glowParameter != nullptr ? juce::jlimit (0.0f, 1.0f, glowParameter->load()) : 0.0f;
+
     if (samplesInScope <= 0)
     {
         g.setColour(juce::Colours::darkgrey);
@@ -115,11 +118,11 @@ void OscilloscopeEditor::paint(juce::Graphics& g)
         else
             oscilloscopePath.lineTo (x, y);
     }
-    juce::Colour glowColour = juce::Colours::limegreen.withAlpha(0.3f);
+    juce::Colour glowColour = juce::Colours::limegreen.withAlpha (0.15f + (0.35f * glowAmount));
 
-    for (float thickness = 102.0f; thickness > 2.0f; thickness -= 2.0f)
+    for (float thickness = 2.0f + (glowAmount * 200.0f); thickness > 2.0f; thickness -= 2.0f)
     {
-        float opacity = 0.2f / thickness; 
+        float opacity = glowAmount * (0.2f / thickness);
         g.setColour (glowColour.withAlpha (opacity));
         
         g.strokePath (oscilloscopePath, juce::PathStrokeType (thickness));
