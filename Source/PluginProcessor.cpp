@@ -45,6 +45,9 @@ void VisualSauceAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, j
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
+    if (!isEditorOpen())
+        return;
+
     pushBuffer(buffer);
 }
 

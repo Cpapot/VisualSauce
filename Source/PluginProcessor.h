@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -38,6 +39,14 @@ class VisualSauceAudioProcessor final : public juce::AudioProcessor
         std::array<float, fifoSize> audioFifo {};       //preallocated audio buffer to draw the oscilloscope
         juce::AbstractFifo          abstractFifo { fifoSize };   //abstract fifo to manage the audio buffer
 
-    private:
+        void setEditorOpen(bool isOpen) { editorOpen.store(isOpen, std::memory_order_release); }
+        bool isEditorOpen() const { return editorOpen.load(std::memory_order_acquire); }
 
+        void    setEditorSize(int newWidth, int newHeight) { editorWidth = newWidth; editorHeight = newHeight; }
+        int     getEditorWidth() const { return editorWidth; }
+        int     getEditorHeight() const { return editorHeight; }
+    private:
+        std::atomic<bool> editorOpen { false };
+        int editorWidth = 800;
+        int editorHeight = 450;
 };

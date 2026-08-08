@@ -7,7 +7,7 @@ class VisualSauceAudioProcessorEditor final : public juce::AudioProcessorEditor
 {
 public:
     explicit VisualSauceAudioProcessorEditor(VisualSauceAudioProcessor&);
-    ~VisualSauceAudioProcessorEditor() override = default;
+    ~VisualSauceAudioProcessorEditor() override;
 
     void paint(juce::Graphics&) override;
     void resized() override;
